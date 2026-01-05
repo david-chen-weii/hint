@@ -1,0 +1,38 @@
+1.
+JAVA 11 or later
+check
+----------------------------
+D:\java\x64\jdk-21.0.8\bin\java" -version
+java version "21.0.8"
+----------------------------
+2.
+set JAVA_HOME
+check
+-----------------------------
+SET JAVA_HOME=D:\java\x64\jdk-21.0.8
+SET PATH=%JAVA_HOME%\bin;%PATH%
+echo %JAVA_HOME%
+-----------------------------
+3.
+create broke instance
+	cd /d D:\tool\code\server\apache-artemis-2.39.0\bin
+	.\artemis.cmd create D:\tool\code\server\apache-artemis-2.39.0\broker
+	Enter username: admin
+	Enter password: ****
+------------------------------
+4.
+run server
+	cd /d D:\tool\code\server\apache-artemis-2.39.0\broker\bin
+	.\artemis.cmd run
+------------------------------
+check
+	http://localhost:8161/
+	
+-----------------------------
+other cmd
+	Command	Description
+	artemis.cmd create <path>	Create new broker
+	artemis.cmd run	Run broker in console
+	artemis.cmd start	Start as background service
+	artemis.cmd stop	Stop broker
+	artemis.cmd upgrade	Upgrade old broker to new version

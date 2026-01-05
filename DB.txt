@@ -1,0 +1,16 @@
+COMMON
+
+SQL SERVER
+recomplie
+	EXEC sp_recompile 'procedure_or_table_name';
+ORACLE SQL
+recomplie
+	select object_name, OBJECT_TYPE, owner from sys.all_objects o where o.status <> 'VALID'
+	and o.OWNER='C##CHB'
+	order by o.OBJECT_TYPE, o.OBJECT_NAME;
+	
+	EXEC DBMS_UTILITY.compile_schema(schema);
+	ALTER FUNCTION function1 COMPILE;
+	ALTER PROCEDURE my_proc COMPILE;
+	
+MY SQL

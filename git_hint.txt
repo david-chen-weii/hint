@@ -1,0 +1,41 @@
+git 
+	初始化 
+		init
+	設定
+		(常用)
+		
+		config [--global/local/system] user.name "name"
+		config [--global] user.email "email"
+		config [--global] --list
+	遠端倉庫(site)
+		remote -v
+		remote add nickname url(add site)
+		remote set-url nickname url(revise)
+		remote remove nickname (delete)
+	下載
+		fetch 
+		pull(fetch + merge)
+		clone(down all repo and git setting)
+	上傳
+		add . (add changes)
+		add file-name file-name(add changes by file)
+		commit -m "comment"
+		push site-nickname branch
+		merge site-branch (merge remote into local)
+	分支
+		branch (local)
+		branch -r (remote(site branch))
+		branch -a (all)
+		branch new-branch-name
+		branch -d branch-name(delete branch)
+		branch -D branch-name(force delete branch)
+		git push origin --delete branch-name(delete remote branch)
+		switch branch-name
+		switch -c new-branch remote-default-branch (add new branch by remote)
+		check out -b branch-name(add and switch old)
+		switch -c branch-name(add and switch new)
+	差異
+		status
+		log --oneline --graph --decorate --all
+	
+	

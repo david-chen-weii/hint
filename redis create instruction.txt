@@ -1,0 +1,64 @@
+wsl
+sudo apt update
+sudo apt install redis-server -y
+sudo service redis-server start
+redis-cli ping
+You should see PONG
+
+echo "sudo systemctl enable redis"
+echo "sudo systemctl start redis"
+echo "systemctl status redis"
+wsl -d RockyLinux-9 
+
+-----------------------------------
+Redis configuration file is usually named redis.windows.conf or redis.conf.
+
+You can:
+
+Change the port (default 6379)
+
+Enable password (via requirepass <password>)
+
+Enable persistence (AOF or RDB)
+
+
+------------------------------------
+Add Redis client dependency (e.g. Jedis or Lettuce) to your Maven project:
+
+<dependency>
+  <groupId>redis.clients</groupId>
+  <artifactId>jedis</artifactId>
+  <version>5.1.0</version>
+</dependency>
+
+------------------------------------
+import redis.clients.jedis.Jedis;
+
+public class RedisExample {
+    public static void main(String[] args) {
+        try (Jedis jedis = new Jedis("localhost", 6379)) {
+            jedis.auth("myStrongPassword"); // if you set password
+            jedis.set("greeting", "Hello Redis!");
+            System.out.println(jedis.get("greeting"));
+        }
+    }
+}
+------------------------------------
+✅ Summary
+Step	Artemis	Redis
+Type	Message broker	In-memory database
+Install	artemis.cmd create/run	redis-server (or Memurai)
+Port	61616 (JMS), 8161 (web)	6379
+Start	.\artemis.cmd run	redis-server
+Test	localhost:8161 web console	redis-cli ping
+Java Client	JMS / ActiveMQ API	Jedis / Lettuce
+------------------------------------
+Command	Description
+SET key value	Set a key
+GET key	Get a key
+DEL key	Delete key
+KEYS *	List all keys
+FLUSHALL	Clear all data
+INCR counter	Increment counter
+LPUSH list val	Push to list
+LRANGE list 0 -1	Read list

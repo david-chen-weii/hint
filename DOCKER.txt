@@ -1,0 +1,156 @@
+DOCKER 
+
+basic
+
+docker container run [Option][image][CMD][ARG...]
+(run image build container)
+	option 
+		-i interact mode keep stdin open
+		-t allocate TTY (often use with -it can use ctrl+p +q jump to main)
+		-d Detached mode(equal & use jobs and bg or fg to exec ) 
+		-p hostPort:containerPort ex -p 8080:80
+		--name NAME assigna a name to the container
+		--rm auto remove container when stop 
+		--entrypoint override entrypoint cmd
+CMD -> if do call cmd in contaner (like bash need the container already worked cmd)
+	noticed will override dockerfile's CMD
+-----------------------------------------------------------------
+docker container inspect [option][image]
+	option 
+		--format='{{json .key}}'
+	key :
+		Config.Cmd → default command
+
+		Config.ExposedPorts → exposed ports
+
+		State.Status → running / exited
+
+		NetworkSettings.Ports → port mappings
+(see the docker container data)
+-----------------------------------------------------------------
+docker container stop [image_name/containerID]
+(stop the container)
+-----------------------------------------------------------------
+docker container prune
+(remove all stop container)
+-----------------------------------------------------------------
+docker container start [option][image_name/containerID]
+	option:
+		-ai attach interactively
+(statr the container)
+-----------------------------------------------------------------
+docker container ls[oprtion]
+(show docker running process)
+	option
+		-a (show all include stop history)
+-----------------------------------------------------------------
+docker container remove[image_name/containerID]
+-----------------------------------------------------------------
+docker container exec[option][image_name/containerID][cmd][ARG...]
+	option
+		-i keep stdin open
+		-t allocate TTY
+-----------------------------------------------------------------
+docker build[option][Path]
+(build image by docker File)
+	option
+		-t Name[:TAG]
+		-f PATH
+		--file PATH
+		--no-cache build image without cache
+		--pull always pull the newest version image
+-----------------------------------------------------------------
+docker save -o project_frontend.tar project_frontend:latest
+-----------------------------------------------------------------
+docker login <registry> 
+(login to self image site)
+docker login ... --password-stdin
+-----------------------------------------------------------------
+docker load -i myimage.tar
+-----------------------------------------------------------------
+<---------------------------------------------------------------->
+docker file 
+
+-----------------------------------------------------------------
+key word
+	FROM<IMAGE> (build image base on)
+	ex:
+		FROM <image> Use a base image (pull from Docker Hub if not local)
+		FROM <registry>/<image> Pull from a custom registry
+		FROM scratch Start from nothing (empty image no linux and other thing)
+		FROM <image:tag> local
+	WORKDIR (set root dir if skip start from / (root) )
+		ex WORKDIR /app all things start going to ./app
+	COPY[dockerfile_dir][image_dir]
+		COPY DOCKERfile to image_WORKDIR		  
+	RUN
+		RUN cmd by sh(default shell if empty image go error)
+	EXPOSE
+	[] treat like json
+	ENTRYPOINT["cmd", ""....] must run unless the cmd be overrided
+		if this cmd part is all be arg for entrypotin
+	CMD["", "" ...] serval cmd(args if entrypoint is exist) 
+	without[] treat like sh
+	ENTRYPOINT cmd 
+	CMD cmd (be igonred if ENTRYPOINT exist)
+	
+-----------------------------------------------------------------
+
+-----------------------------------------------------------------
+examle:
+# 1️⃣ Use a lightweight C build environment
+FROM gcc:latest AS builder
+
+# 2️⃣ Copy your source code
+WORKDIR /app
+COPY . .
+
+# 3️⃣ Build your program
+RUN make
+
+# 4️⃣ Create a smaller runtime image
+FROM debian:bookworm-slim
+WORKDIR /app
+COPY --from=builder /app/server /app/server
+
+# 5️⃣ Expose port and run
+EXPOSE 8080
+CMD ["./server"]
+-----------------------------------------------------------------
+<---------------------------------------------------------------->
+docker-compose.yml
+(multi build or up or down)
+-----------------------------------------------------------------
+docker-compose build[option][service name]
+-----------------------------------------------------------------
+docker-compose up[option]
+docker-compose up --build -d
+-----------------------------------------------------------------
+docker-compose down
+-----------------------------------------------------------------
+
+-----------------------------------------------------------------
+example:
+version: "3.9"
+
+services:
+  frontend:
+    image: project_frontend:latest   
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile  # front-end Dockerfile
+    ports:
+      - "80:80"  # map host port 80 to container port 80
+
+  backend:
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile  # back-end Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+
+# optional: mount config files
+#   volumes:
+#     - ./other-setting-config:/app/config

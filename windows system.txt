@@ -1,0 +1,13 @@
+cmd
+	powercfg -devicequery wake_armed  列出可喚醒裝置
+	powercfg -devicedisablewake "HID-compliant mouse" 解除喚醒裝置
+	chkdsk [disk_name][option]
+		ex: chkdsk C: /f /r
+		option:
+			/f fix error
+			/r locate bad sectors and recover 
+regedit
+
+ipconfig
+
+diskmgmt.msc

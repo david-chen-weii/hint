@@ -1,0 +1,326 @@
+Linux
+
+target:
+Can navigate the file system: cd, ls, pwd
+
+Can read/write files: cat, less, echo, touch, cp, mv, rm
+
+Can manage processes: ps, kill, top
+
+Understand permissions: chmod, chown
+
+Can run shell scripts (Bash scripts)
+
+Basic understanding of packages and installation (apt, yum, dnf)
+
+bash
+-----------------------------------------------------------------------------------------------------------
+#!/bin/bash (tell linux use bash run it)
+	
+-----------------------------------------------------------------------------------------------------------
+; (if one line has two cmd use this seperate out)
+-----------------------------------------------------------------------------------------------------------
+if [[ condition seperate by ' ' empyth]]; then
+
+fi (end if)
+-----------------------------------------------------------------------------------------------------------
+for a in b;do 
+
+done (end loop)
+-----------------------------------------------------------------------------------------------------------
+output > file (output rewrite the file)
+output >> file (output append a line to the file )
+<----------------------------------------------------------------------------------------------------------->
+useful cmd
+-----------------------------------------------------------------------------------------------------------
+cat[options][fileName]  
+(show the content of file)
+
+	[options]
+		-n	Number all lines (including blank ones)
+		-b	Number non-blank lines only
+		-s	Squeeze multiple blank lines into one
+		-E	Show $ at the end of each line
+		-T	Show TAB characters as ^I
+		-A	Equivalent to -vET (shows non-printing, $, and TAB)
+-----------------------------------------------------------------------------------------------------------		
+sed [options]|[pattern]|[replacemetn]|[flag]
+(edit stream substitute )
+	EX:
+		sed 's/Linux/LINUX/g' article.txt
+	[options]
+		1. s : replace one by one 
+	[pattern]
+		anyword, ^ at start, $ at end
+	[flag]
+		1.g all pattern to replace (global)
+		2. d remove
+		3. a\new line (if match add new line(at back))
+		4. i\new line (if match insert new line(at head))
+		5. c\replace line (if match replace all to the replace line)
+-----------------------------------------------------------------------------------------------------------
+chmod [flag] [file]
+(改變檔案權限)
+	extra :
+		檔案權限 ---/---/--- u/g/o
+		+x +r +w(可執行/讀取/修改) -x -r -w
+		u user/ g group/ o others/ a all
+		1 --x/ 2 -w- / 4 r-- so 367 mean -xw/rw-/rwx
+-----------------------------------------------------------------------------------------------------------	
+find [path][options][expression] 
+(find the file with condition)
+	[options] 
+		-type f(file) d(dir) 
+		-size +10MB(bigger than 		10MB) -1k(smaller than 1k)
+		-mtime/mmin -1/1/+1(within last 24h, within 24h, more than one day)/same but for minute
+		-name "name"(file name)
+-----------------------------------------------------------------------------------------------------------
+grep [options][pattern][filename] 
+(find the content with condition)
+	[options] 
+		-i Ignore case(insensitive)
+		-v not match
+		-n show line number
+		-r recusiv find with[dir] find all the dir's file 
+		-l show match file list
+		-c show match line num
+		--color highlight text
+		-E for multi pattern like(a|b|c)
+-----------------------------------------------------------------------------------------------------------			
+awk [options][delimiter]['pattern { action }'][fileName] 
+(spilt line with delimiter (default " " space) and do the action)
+	[options] 
+		-F delimiter change delimiter
+	[pattern]
+		/snytax/ 定位點
+	[action]
+		1.print $1, 
+		2.printf $1 (print the num's value) 
+		3.system() (example : system("ls -l " $1) ) do ls -l
+		4.toupper($1) $1 to upper
+		5.tolower($1) $1 to lower
+	[extra]
+		$0 all
+	example echo -e "aaa bbb ccc\nddd" | awk '/aaa/ {print $0}' (有定位點)
+			echo -e "aaa bbb ccc\nddd" | awk '{print $0}' (無定位點)
+	ex:
+		awk '$NF ~ /[aeiouAEIOU].$/ {print $0}' article.txt (last word and it's char[word.length-1] is vowel) - is mean use regex
+		awk '{c=0; for(i=1;i<=NF;i++) if($i=="Linux") c++; if(c>1) print $0}' article.txt
+		awk '{ for(i=1;i<=NF;i++) w[$i]++ } END{for(word in w) if(w[word] > 1) print word}' article.txt (when all first for loop end then do second END{for loop }
+	
+	artile.txt :
+		Linux is a powerful operating system used by developers, engineers, and sysadmins.
+		It is known for stability, flexibility, and open-source nature.
+		Many servers around the world run on Linux because it is reliable.
+		Learning Linux can improve your problem-solving and automation skills.
+
+
+-----------------------------------------------------------------------------------------------------------
+cut[options][delimiter][-field][filename] 
+(easy awk for thing like csv) 
+	[options] -d set delimiter like -d','
+		-c1-5 get first 5 char
+	[field]
+		-f1,4 get first and fourth
+		-f1-5 get 1-5 value
+	ex::
+		date | cut -d' ' -f1-3
+-----------------------------------------------------------------------------------------------------------
+sort[options][delimiter][-k field][fileName]
+sort line by line with condition
+	[options]
+		-n	Numeric sort (sort by number value)	sort -n numbers.txt
+		-r	Reverse the sort order	sort -r file.txt
+		-k	Sort by specific column (field)	sort -k2 file.txt
+		-t	Specify delimiter for fields	sort -t',' -k2 file.csv
+		-u	Output only unique lines (like uniq)	sort -u file.txt
+	extra :
+		sort -t',' -k2,2 -k3,3 file.csv (multi sort)
+		-k2,2 → sort only on 2nd column (from 2 to 2)
+		-k2 (alone) means sort starting from 2nd column, possibly including other fields — so use -k2,2 to be strict
+-----------------------------------------------------------------------------------------------------------		
+uniq[options][fileName]
+(find the duplicate line)
+	[options]
+		-c count occurrence times
+		-d only show repeated line
+		-u only show unique
+	extra:
+		default if dupicate wont show the line (each line at most once)
+-----------------------------------------------------------------------------------------------------------	
+xargs[options][action] pass the multi para(default split with space tab \n)
+	[options]
+		-d set delimiter
+		-I{} store the thing into it for later use
+		-n1 pass the thing one by one 
+	example:
+		1. echo -e "file1\nfile2\nfile3" | xargs -d '\n' echo -> file1 file2 file3
+		2. cat file | xargs mkdir (aaa/bbb ccc\nddd) - > mkdir aaa/bbb, ccc, ddd
+		3. echo "a.txt b.txt c.txt" | xargs -n1 -I{} cp {} ./backup/{}
+-----------------------------------------------------------------------------------
+test
+1.Show the first 5 lines of the file.
+	head -n 5 practice.txt
+	cat -n practice.txt | head -n 5
+	awk 'NR <= 5' practice.txt
+2.Show the last 3 lines of the file.
+	tail -n 3 practice.txt
+	tail -3 pratctic.txt
+3.Count how many words are in the file.
+
+4.Find all lines containing the word "market" (case-insensitive).
+
+5.Count how many times the word "fish" appears in the file (case-insensitive).
+
+6.Show only lines that start with the word "The".
+
+7.Show the 3rd to 6th lines of the file.
+
+8.Print only the first word of each line.
+
+9.Find and display all unique words in alphabetical order.
+
+10.Replace all occurrences of "village" with "town" and print the result (without modifying the file).
+
+11.Show only lines with more than 8 words.
+
+12.Show the longest line in the file.
+---------------------------------------------------------------------------------------------------------
+The sun was already high when the small fishing boat returned to the shore. 
+Fisherman Li wiped the sweat from his forehead and looked at the baskets full of fresh mackerel, tuna, and sardines. 
+This morning had been better than usual, though the waves had been rough and the wind had bitten through his jacket.
+
+At the market, merchants were setting up their stalls. A woman selling oranges called out to early customers, her voice mixing with the sounds of haggling and cart wheels on the cobblestone. 
+Next to her, a baker stacked fresh loaves of bread, while a young boy arranged rows of colorful peppers.
+
+Further down the street, an old man repaired nets in front of a shop selling fishing hooks, lines, and other gear. 
+He worked slowly, his hands moving with the precision of decades of experience. 
+Occasionally, he looked up to greet friends passing by.
+
+In a small café, travelers drank strong coffee and spoke quietly. 
+One man in a dark coat read a newspaper headline about a coming storm. 
+The bartender polished glasses, listening to the faint sound of the harbor bells.
+
+Meanwhile, in the hills beyond the village, farmers tended their fields. 
+They planted seeds, watered crops, and chased away crows. 
+The green terraces stretched toward the horizon, broken only by winding dirt paths.
+
+By afternoon, the fishing boats had been unloaded and the market was crowded. 
+Children ran between stalls, laughing and carrying sweet pastries wrapped in paper. 
+The smell of grilled fish and fried dough filled the air.
+
+As the day faded, the last rays of sunlight touched the tiled rooftops. 
+The harbor lights flickered on, and the village prepared for the night. 
+Cats prowled near the fish market, hoping for scraps. 
+From the café came the sound of a violin, slow and nostalgic.
+
+Tomorrow, the fishermen would go out again before dawn. 
+The merchants would arrange their goods. 
+The farmers would walk to the fields. 
+Life in the village would continue, shaped by the sea, the land, and the people who called it home.
+
+-----------------------------------------------------------------------------------
+<-----------------------------------------------------------------------------------------------------------	>
+variable
+<-----------------------------------------------------------------------------------------------------------	>
+set []=[]
+-----------------------------------------------------------------------------------------------------------	
+env
+setenv [] []
+-----------------------------------------------------------------------------------------------------------	
+export []=[]
+
+-----------------------------------------------------------------------------------------------------------	
+source [filename] / . [filename]
+(make key value list ex: abc=123)
+
+<-----------------------------------------------------------------------------------------------------------	>
+system
+-----------------------------------------------------------------------------------
+cd [dir name]
+(change directory)
+-----------------------------------------------------------------------------------
+ls [option]
+	[option]
+		-l detail
+		-a include hidden
+-----------------------------------------------------------------------------------
+pwd
+(show the current dir)
+-----------------------------------------------------------------------------------
+touch [fileName]
+(create the file or update the timestamp)
+-----------------------------------------------------------------------------------
+cp [fileName][dir]
+rsync (more powerful)
+	ex:rsync -av --backup --suffix=.bak a/ ../test/
+	[Option]
+		-a (archive mode (recursive, preserves attributes))
+		-v verbose
+		--backup = make a backup of files that would be overwritten
+		--suffix=.bak = backup old files with .bak appended
+		(ex: If ../test/file1 exists, it will become file1.bak and new file1 is copied.)
+(copy file to dir)
+-----------------------------------------------------------------------------------
+mv [fileName][dir]
+(mv file to dir)
+-----------------------------------------------------------------------------------
+rm[option][fileName]
+(remove file)
+	[option]
+		-r dir ,delete all in the dir
+		-rf dir, delete all in the dir without checking(force)
+-----------------------------------------------------------------------------------
+ps 
+(show process)
+-----------------------------------------------------------------------------------
+kill[option][PID]
+(kill the process)
+	[option]
+		-9(force kill)
+-----------------------------------------------------------------------------------
+top
+(interactive process viewer for keeping watch)
+q to quit
+-----------------------------------------------------------------------------------
+which[program]
+(show the program location)
+-----------------------------------------------------------------------------------
+nice/renice
+(set file exec privity seq)
+ex : renice -n <Num> -p <PID>
+	nice -n 15 sh -c "sleep 60s; head -n 1 /etc/passwd"
+	(sh call /bin/bash or /bin/dash, -c do the cmd behind this , these two usually combine for exec multi cmd seperate by ;)
+	Num
+		-20-19 <0 只有root 可以使用 , 一般使用者僅能向上調整(ex original 5 -> 6-19 if 4 failed)
+-----------------------------------------------------------------------------------
+chmod 
+(change file priv)
+ex : chmod [x]xxx
+
+first special for dir 通常只會擇1使用 或掠過
+4 SUID 檔案執行時用owner執行
+2 GUSD 檔案自動繼承 parent's group
+1 SBIT 檔案僅能被 root 或 owner delete/rename
+second - fourth (owner, group, others)
+4 can read
+2 can edit
+1 can exec
+----------------------------------------------------------------------------------------
+chroot
+(linux root vm)
+------------------------------------------------------------------------------------------
+unshare
+(linux system vm)
+------------------------------------------------------------------------------------------
+lsblk[optional] 
+(show the disk usage)
+	optional
+		-f (show filesystems)
+<-----------------------------------------------------------------------------------------------------------	>
+help
+-----------------------------------------------------------------------------------
+man[cmd]
+(show the cmd manual)
+-----------------------------------------------------------------------------------
+<-----------------------------------------------------------------------------------------------------------	>

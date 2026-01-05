@@ -1,0 +1,15 @@
+解題筆記
+1.arr相關
+
+2.tree相關
+    easy 
+	DFS loop all node
+3.graph相關
+    easy
+	DFS loop all path
+    medium
+	toposort acyclic 
+ 
+4.dp相關
+
+5.

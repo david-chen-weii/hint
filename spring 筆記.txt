@@ -1,0 +1,66 @@
+spring 筆記
+---------------------------------------------------------------------------------
+@Annountation
+---------------------------------------------------------------------------------
+控制
+1. @AutoWeird(全域物件 由spring 控制lifecycle)
+	
+Bean 種類
+1. @Component  		(除以下之外 需要由spring 管控的class)
+2. @Service    		(業務邏輯)
+3. @Repositroy 		(DATA for db )
+4. @Controller 		(頁面呼叫)
+5. @RestController	(ajax 頁面呼叫)
+6. @Bean		(method for third party lib)
+7. @RequestScope(for local bean per user)
+
+1. @Value (get data from application.properties or application.yml)
+	ex:@Value("${email.smtp.host}")
+	@Value("${email.smtp.port:25}") properity:default (設定預設)
+VIEW SCOPE
+2. @Scope (網頁型態)
+	singleton	Default. One instance per Spring container.
+	prototype	New instance every time getBean() is called. Spring does not track it after creation.
+	request	One instance per HTTP request. Only valid in web applications.
+	session	One instance per HTTP session.
+	application	One instance per ServletContext.
+	websocket	One instance per WebSocket session (Spring WebSocket).
+	custom	You can define your own scope by implementing Scope interface.
+	UIScope (Vaadin)	One instance per Vaadin UI. Not part of core Spring, comes from Vaadin integration.
+
+	
+權限
+1. @PreAuthorize() (方法進入的權限)
+	"hasRole('ADMIN')"
+	"hasAuthority('PERM_DBList')"
+	
+---------------------------------------------------------------------------------
+spring em
+(for JPA controll DB)
+
+@PersistenceContext
+private EntityManager em;
+
+---------------------------------------------------------------------------------
+<------------------------------------------------------------------------------->
+Lombok
+<------------------------------------------------------------------------------->
+@Annountation
+1. @Data 
+2. @Slf4j (log 相關)
+---------------------------------------------------------------------------------
+
+<------------------------------------------------------------------------------->
+Vaadin
+<------------------------------------------------------------------------------->
+@Annountation
+1. @UIScope (// so each UI has its own instance)
+
+2.1 正確搭配（強烈建議）
+類型	Scope	說明
+Service	singleton	無狀態、可共用
+Repository	singleton	JPA Thread-safe
+Vaadin View	@UIScope	每個瀏覽器分頁一個
+使用者 UI 狀態	@UIScope	表單、選擇狀態
+登入資訊	Spring Security	不自己存
+---------------------------------------------------------------------------------
