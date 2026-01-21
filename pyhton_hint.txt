@@ -1,0 +1,71 @@
+PIP LIST
+-----------------------------------------------------------------------------------------------------------
+管理工具
+-----------------------------------------------------------------------------------------------------------
+1. 核心基礎架構 (Infrastructure)
+uv: 你的專案包管理員。比 pip 快 10-100 倍，解決 Python 版本混亂的終極方案。
+install: -c "irm https://astral.sh/uv/install.ps1 | iex"
+<------------------------------------------------------------>
+# Windows (PowerShell):
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# 2. 初始化專案 (這會建立 pyproject.toml)
+uv init stock_project
+cd stock_project
+
+# 3. 指定使用 Python 3.13
+uv python pin 3.13
+uv add fastapi pydantic polars httpx selectolax sqlalchemy pandas-ta plotly
+uv add --dev pyright mypy(為了「型別檢查」，我們另外安裝開發用的工具：)
+<------------------------------------------------------------>
+-----------------------------------------------------------------------------------------------------------
+
+FastAPI: 你的 Web 伺服器。對應 Java 的 Spring Boot，負責提供 API 接口給你的 Java 前端。
+
+Pydantic (V2/V3): 資料驗證層。對應 Java 的 POJO/DTO，負責把爬蟲抓回來的 JSON 轉成強型別物件。
+
+2. 高效能數據處理 (Data Processing)
+Polars: 你的數據引擎。這絕對不能少。
+
+為什麼不選 Pandas？ 因為 Pandas 太慢且吃記憶體。Polars 是 Rust 寫的，支援 Lazy Evaluation (延遲計算)，能讓你在 8GB RAM 的電腦上輕鬆處理幾百萬列的股價資料。
+
+SQLAlchemy + aiosqlite (或 asyncpg): 非同步資料庫工具。
+
+Java 工程師最習慣 ORM。SQLAlchemy 就是 Python 界的 Hibernate/JPA。配合 async 模式，讓你在抓 1700 家資料時不會卡住。
+
+3. 金融與指標運算 (Finance & Quant)
+pandas-ta: 技術指標庫。
+
+內建超過 130 種指標（RSI, MACD, 布林通道）。雖然名字有 pandas，但它能完美與你的分析流程結合。
+
+FinMind (或 twstock): 台灣股市專用庫。
+
+這能幫你省掉很多寫爬蟲的時間，直接幫你對接台灣證交所資料。
+
+4. 視覺化 (Visualization)
+Plotly: 畫圖工具。
+
+回傳 JSON 格式給前端，Java 只需要渲染這個 JSON 就能畫出超專業的 K 線圖。
+------------------------------------------------------------------------------------------------
+1. 網路請求層：從 requests 換成 httpx
+這是目前最強大的替換方案。
+
+為什麼換？ requests 是同步的（Synchronous），在 Java 語境中就是它會 Block 你的 Thread。
+
+httpx 的優勢： * 它支援 async/await。這意味著你可以同時發出 10 個請求，而不需要開 10 個 Thread。
+
+它支援 HTTP/2，這在爬取現代網站（如證交所新版頁面）時，速度更快且更不容易被視為異常流量。
+
+2. 解析層：從 bs4 換成 Selectolax (極速) 或 Parsel
+雖然 bs4 很好用，但它解析 HTML 的速度非常慢，因為它是用純 Python 寫的。
+
+Selectolax (推薦): 底層是用 C 語言寫的 (Modest engine)，解析速度比 bs4 快 20-30 倍。
+
+Parsel (Scrapy 同款): 支援 CSS Selector 和 XPath，寫法比 bs4 簡潔很多。
+
+3. 如果網站有 JavaScript 加密 (Dynamic Content)
+如果 1700 家公司的某些數據是透過 JavaScript 動態載入的，以前你可能用 Selenium，現在我們用：
+
+Playwright: 這是微軟開發的，比 Selenium 快得多，且內建了「自動等待」功能，寫起來跟 Java 的非同步處理一樣順手。
+-----------------------------------------------------------------------------------------------------------
+

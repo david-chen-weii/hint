@@ -317,6 +317,26 @@ lsblk[optional]
 (show the disk usage)
 	optional
 		-f (show filesystems)
+<----------------------------------------------------------------------------------------------------------->
+----------------------------------------------------------------------
+解壓縮
+unzip
+ (for unzip .zip, .jar)
+  example : unzip file [option]
+  [option]
+	-d [path] unzip to path
+tar 
+  (for unzip .tar.gz, .tar, .tgz, .tar.xz file)
+  tar [option]-xzf(basic needed) file [option2]
+	example : tar -xzf file -C path
+	[option]
+		-x  extract(unzip) needed
+		-z 	unzip by gzip (when .tar.gz, tgz) (normally needed)
+		-f fileName unzip the file basic needed
+		-J file unzip .xz (use when .xz file)
+	[option2]
+		-C path unzip to path
+----------------------------------------------------------------------
 <-----------------------------------------------------------------------------------------------------------	>
 help
 -----------------------------------------------------------------------------------
