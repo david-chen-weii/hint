@@ -1,0 +1,47 @@
+# --- 第一階段：構建階段 (Build Stage) ---
+FROM python:3.13-slim AS builder
+
+# 安裝 uv 
+#這是從「另一個 Docker 映像檔」拷貝到「你的 Docker 映像檔」裡。
+#這行指令的語法是：COPY --from=來源鏡像 [檔案A] [檔案B]... [目的地路徑]
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# 設定工作目錄
+#這是設定「映像檔內部」的預設工作路徑。
+#
+#你可以把它想像成 Linux 的 cd /app。
+#
+#設定之後，接下來的所有指令（如 COPY、RUN、CMD）都會在這個目錄下執行。
+#
+#如果映像檔裡原本沒有 /app 這個資料夾，Docker 會自動幫你建立。
+#
+#為什麼要設這個？ 為了整潔。你不想把你的程式碼直接丟在 Linux 的根目錄（/），那樣會跟系統檔案#混在一起。
+WORKDIR /app
+
+# 先複製 uv 的設定檔，利用 Docker Layer Cache 避免重複安裝依賴
+COPY pyproject.toml uv.lock ./
+
+# 安裝依賴 (不安裝專案本身，只安裝 lib)
+# --frozen 確保 lock 檔一致，--no-install-project 避免還沒 copy src 就報錯
+RUN uv sync --frozen --no-cache --no-install-project
+
+# --- 第二階段：執行階段 (Runtime Stage) ---
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# 從 builder 階段複製虛擬環境
+# uv 預設會把虛擬環境建立在 .venv
+COPY --from=builder /app/.venv /app/.venv
+
+# 複製原始碼與設定
+COPY ./src ./src
+COPY .env ./
+
+# 設定環境變數，讓 Python 優先使用 .venv 裡的 lib
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# 執行指令 (根據你的專案結構，使用模組化啟動)
+CMD ["python", "-m", "project_codename"]
