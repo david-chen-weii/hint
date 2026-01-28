@@ -1,5 +1,14 @@
 # --- 第一階段：構建階段 (Build Stage) ---
+#(第一階段)： 
+#這是在「下載並啟動」一個用來建築 (Build) 的環境。
+#我們在這裡安裝 uv、下載套件、編譯二進位檔。
+#這個階段的映像檔通常很大，因為它包含了很多安裝工具。
+#AS nickName
 FROM python:3.13-slim AS builder
+
+# 關鍵設定：告訴 uv 只用系統現有的 Python
+ENV UV_SYSTEM_PYTHON=1
+ENV UV_PYTHON_PREFERENCE=only-system
 
 # 安裝 uv 
 #這是從「另一個 Docker 映像檔」拷貝到「你的 Docker 映像檔」裡。
@@ -26,6 +35,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-cache --no-install-project
 
 # --- 第二階段：執行階段 (Runtime Stage) ---
+#(第二階段)： 這會啟動一個全新、乾淨的環境。這才是你最後要拿來執行的映像檔。
 FROM python:3.13-slim
 
 WORKDIR /app
