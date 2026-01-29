@@ -252,6 +252,8 @@ touch [fileName]
 (create the file or update the timestamp)
 -----------------------------------------------------------------------------------
 cp [fileName][dir]
+(only when move single small file use this or there is no rsync 
+	otherwise use rsync is more reliable)
 rsync (more powerful)
 	ex:rsync -av --backup --suffix=.bak a/ ../test/
 	[Option]
@@ -263,7 +265,7 @@ rsync (more powerful)
 (copy file to dir)
 -----------------------------------------------------------------------------------
 mv [fileName][dir]
-(mv file to dir)
+(mv file to dir not copy paste so can do rename )
 -----------------------------------------------------------------------------------
 rm[option][fileName]
 (remove file)

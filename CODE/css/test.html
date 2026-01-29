@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>現代化股利監控後台</title>
+    <style>
+        /* 1. 基礎重設 (Reset) 與 根字體設定 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box; /* 確保 padding 不會撐破盒子 */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        :root {
+            
+            --sidebar-width: 250px;   
+            --header-height: 70px;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --primary-color: #1a73e8;
+            /*--變數宣告*/
+        }
+
+        /* 2. 主容器佈局 (Grid) */
+        .dashboard-container {
+            display: grid;
+            /* 橫向：側邊欄固定，其餘自適應 */
+            grid-template-columns: var(--sidebar-width) 1fr;
+            /* 縱向：標題固定，內容佔滿剩下高度 */
+            grid-template-rows: var(--header-height) 1fr;
+            /*對區塊 命名 可以直接用命名取得區塊*/
+            grid-template-areas: 
+                "side header"
+                "side main";
+            height: 100vh;
+            background-color: var(--bg-color);
+        }
+
+        /* 3. 側邊欄 (Sidebar) */
+        .sidebar {
+            /*statr line / end line grid的網格線ㄝ, -1代表最後 num span 跨格子*/
+            /* grid-row: 1 / 3; 從第一行跨到最後一行，直向佔滿 */
+            grid-area: side /*直接使用 命名區塊*/;
+            background-color: #2c3e50;
+            color: white;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* 4. 上方導航 (Header) - 使用 Flex 定位 */
+        .header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between; /* 左右撐開 */
+            align-items: center; /* 垂直居中 */
+            padding: 0 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #ddd;
+            border-radius: 50%; /* 圓形 */
+        }
+
+        /* 5. 主要內容區 (Content) - 使用 Grid 卡片佈局 */
+        .content {
+            padding: 2rem;
+            display: grid;
+            /* 魔法屬性：寬度至少 250px，自動填滿 1fr。這是 RWD 的精髓！ */
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            overflow-y: auto; /* 超出時出現滾動條 */
+        }
+
+        /* 6. 卡片設計 (Box Model 練習) */
+        .card {
+            background-color: var(--card-bg);
+            padding: 1.5rem; /* 內襯 */
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color); /* 強調線 */
+            transition: transform 0.2s; /* 加一點互動感 */
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #222;
+        }
+
+        /* 7. 響應式微調：手機模式下側邊欄消失 (簡單版) */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr; /* 側邊欄收起來，只剩一欄 */
+            }
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h2>Stock Admin</h2>
+        <nav>首頁</nav>
+        <nav>股利追蹤</nav>
+        <nav>設定</nav>
+    </aside>
+
+    <header class="header">
+        <h1>2026 股利監控儀表板</h1>
+        <div class="user-profile">
+            <span>Admin User</span>
+            <div class="avatar"></div>
+        </div>
+    </header>
+
+    <main class="content">
+        <div class="card">
+            <h3>股利總計 (TWD)</h3>
+            <p class="value">$1,250,000</p>
+        </div>
+        <div class="card">
+            <h3>持有公司數</h3>
+            <p class="value">1,700</p>
+        </div>
+        <div class="card">
+            <h3>預估殖利率</h3>
+            <p class="value">5.2%</p>
+        </div>
+        <div class="card">
+            <h3>本月配息通知</h3>
+            <p class="value">12 家</p>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>
