@@ -9,14 +9,34 @@ install: -c "irm https://astral.sh/uv/install.ps1 | iex"
 # Windows (PowerShell):
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 
+# 確認 uv python list (uv 可使用的python版本)
+ 
 # 2. 初始化專案 (這會建立 pyproject.toml)
 uv init stock_project
 cd stock_project
 
 # 3. 指定使用 Python 3.13
-uv python pin 3.13
+uv python pin 3.13 
+# 3-1. 安裝特定 python 
+uv python install version (通常用pin 即可)
+
 uv add fastapi pydantic polars httpx selectolax sqlalchemy pandas-ta plotly
+(Updates pyproject.toml, uv.lock, and installs it.)
 uv add --dev pyright mypy(為了「型別檢查」，我們另外安裝開發用的工具：)
+
+uv sync (自動安裝 lib Updates nothing in your config; only changes your .venv.)
+
+vu tool install [lib](add daily work tool in isolation env)
+
+To run a tool once without installing (the pipx run equivalent):
+uvx ruff check .
+(Note: uvx is just a short alias for uv tool run)
+
+To see what you have installed:
+uv tool list
+
+To update everything:
+uv tool upgrade --all
 <------------------------------------------------------------>
 -----------------------------------------------------------------------------------------------------------
 

@@ -1,5 +1,39 @@
 spring 筆記
 ---------------------------------------------------------------------------------
+入口
+1. @SpringBootApplication 的「三位一體」
+這個註解其實是三個註解的組合包，理解這三個就能掌握 Spring 的啟動邏輯：
+
+@SpringBootConfiguration：
+告訴 Spring 這是個「配置類別」。它本質上就是 @Configuration，代表你可以在這個類別裡用 @Bean 定義組件。
+
+@EnableAutoConfiguration：
+Spring Boot 的靈魂。它會根據你 pom.xml 或 build.gradle 裡引入的 Jar 包，自動幫你配置好對應的 Bean（例如：看到 MySQL 驅動就自動配置 DataSource）。
+
+@ComponentScan：
+這就是為什麼入口類別的位置很重要。它預設會掃描「當前套件（Package）及其所有子套件」下的所有 @Component, @Service, @Repository, @Controller。
+
+⚠️ 注意事項 1：層級結構
+務必把 Application 類別放在根目錄（例如 com.mt.net）。如果你把它放在 com.mt.net.app，那麼 com.mt.net.service 裡的 Bean 就會掃描不到，導致注入失敗。
+
+2. SpringApplication.run() 到底做了什麼？
+當你執行 main 方法時，Spring 實際上開啟了一個複雜的生命週期：
+
+啟動計時器：記錄啟動花了幾秒。
+
+發布事件 (Events)：觸發 ApplicationStartingEvent。
+
+準備環境 (Environment)：讀取 application.properties 或 yml。
+
+創建容器 (ApplicationContext)：這是 Spring 的大腦，用來存放所有的 Bean。
+
+刷新容器 (Refresh)：進行依賴注入（DI），初始化所有的實例。
+
+4. 2026 年的入口優化：Banner 與 Lazy Initialization (僅在 檔案太大時 避免每次修改 重開太久 才打開)
+Lazy Initialization：如果你的專案很大，啟動很慢，可以在 application.properties 設定 spring.main.lazy-initialization=true。這會讓 Bean 在被用到時才初始化，大幅縮短啟動時間。
+
+Banner：你可以自定義啟動時的 ASCII Art 字樣（放在 src/main/resources/banner.txt），這雖然不影響功能，但這就是「老手」的儀式感。
+---------------------------------------------------------------------------------
 @Annountation
 ---------------------------------------------------------------------------------
 控制
