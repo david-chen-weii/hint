@@ -1,0 +1,54 @@
+1. 一定要知道的 (The Must-Haves)
+這部分如果不懂，你的程式碼在併發或正式環境下會出現「靈異現象」。
+
+Bean 的作用域 (Scope)：
+
+Singleton (預設)：整個 Spring 容器只有一個實例。這意味著你的 Service 裡不能存有狀態的成員變數，否則 A 使用者的資料會被 B 蓋掉。
+
+Prototype：每次注入都是新的。
+
+宣告式事務 (@Transactional)：
+
+這就是我們聊過「資料庫一致性」的實作。你要知道它的失效場景（例如：同一個類別內方法自呼叫，事務會失效，因為繞過了代理）。
+
+依賴注入的時機 (Constructor vs. Field)：
+
+為什麼現在官方推薦用「建構子注入」而不是 @Autowired 在變數上？（提示：為了不可變性、方便單元測試、避免循環依賴）。
+
+配置管理 (Profiles & @Value)：
+
+如何根據環境（dev, test, prod）切換資料庫連線？如何從 application.yml 讀取參數？
+
+2. 知道比較好的 (The Should-Knows)
+這部分能讓你從「會寫 Code」變成「會解決效能與架構問題」。
+
+非同步處理 (@Async)：
+
+當你需要寄發電子郵件或處理重型 GPU 運算，又不想讓使用者在網頁上轉圈圈等待時，這招必學。
+
+排程任務 (@Scheduled)：
+
+每天凌晨自動備份資料庫、清理快取。
+
+Spring Boot 啟動原理 (Auto-Configuration)：
+
+了解為什麼你只要引入一個 starter，Spring 就能自動幫你連上資料庫？（關鍵字：@ConditionalOnMissingBean）。
+
+快取抽象 (@Cacheable)：
+
+結合 Redis 使用。不需要自己手動寫 if (redis.get == null) { db.find }，一個註解搞定。
+
+3. 可知可不知的 (The Nice-to-Haves)
+這些通常出現在超大型架構或特定的面試題中，日常開發碰到的機率較低。
+
+響應式編程 (Spring WebFlux)：
+
+非阻塞（Non-blocking）的寫法，效能極高但開發極難、除錯極痛苦。除非你要處理萬人同時線上的高併發，否則普通的 MVC 就夠了。
+
+自定義 Starter 封裝：
+
+如果你要在多個專案間共用你的 BaseWindow 框架，你可以把它包成一個 Starter。
+
+Bean 的生命週期細節 (Aware Interfaces)：
+
+例如 BeanNameAware, ApplicationContextAware。除非你要開發像 Spring 官方那樣的底層套件，否則幾乎用不到。

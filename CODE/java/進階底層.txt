@@ -1,0 +1,183 @@
+$note1
+註釋與反射
+
+註釋 本質就是 interface
+
+public @interface Pig {
+    String value() default "Kobe";
+}
+使用 @Pig(value='Tom') 
+類似 一般方法 但java在一開始就把值塞入 後續只能唯讀 呼叫value() 
+
+這行代碼告訴 Java 編譯器：
+	@interface 表示這是註釋用
+	1.我創造了一種新的「標籤」，名字叫 Pig。
+	2.這張標籤上面有一個格子（方法），叫做 value。
+	3.如果貼標籤的人沒寫內容，預設值就是 "Kobe"。
+	
+為什麼他是interface
+	定義規範：介面是用來定義「有什麼能力」或「有什麼屬性」的。註解也是在定義「這段代碼帶有什麼資訊」。
+	方法即屬性：你在註解裡寫的 String value();，在介面裡就是一個抽象方法。
+	多重繼承限制：Java 不允許類別多重繼承，但介面可以。不過註解被規定必須繼承 java.lang.annotation.Annotation，且不能再繼承其他介面，這保證了它的純粹性。
+	
+為什麼不直接 implements？
+	既然是 Interface，為什麼不能 implements？
+	這就是 Java 底層的「特殊待遇」。雖然它編譯後是介面，但 Java 在語法層面做了限制：
+	關鍵字保護：你必須用 @interface 而不是 interface。
+	自動實現：一般的介面需要你寫一個 class 去實作它；但註解的實作是由 JVM 在執行期（Runtime）動態生成的代理物件。
+
+實際編譯
+	當你執行 javac 編譯後，如果你用 javap -v Pig.class 去反編譯它，你會看到它真正的真面目：
+	public interface Pig extends java.lang.annotation.Annotation {
+		public abstract java.lang.String value();
+	}
+	當你在類別上面寫 @Pig 時，Java 編譯器會把這組資訊（註解類型、參數值）寫進 .class 檔案的一個特殊區域，叫做 RuntimeVisibleAnnotations（如果你設定的是 RUNTIME 的話）。
+	所以，「我有這個註釋」 這件事，其實是被硬編碼進你的字節碼（Bytecode）裡的。
+
+註釋 對java而言只是 標註的貼紙 雖然會編譯 但不會做任何處理 
+必須由 工具 攔截器 進行 分類處理 這邊就輪到 反射登場了 
+因為不能確定哪些東西被貼上標記 只能透過反射處理
+為什麼不直接用interface interface需要 實作方法 但註釋不用
+
+反射 
+1. 如果只有 Interface，沒有註解與反射會怎樣？
+正如你所說，如果不用註解，我們確實可以用 interface 的繼承體系來搞定。但這會導致一個嚴重的問題：「強耦合（Strong Coupling）」。
+
+Interface 方案（傳統）：
+你必須讓你的 OrderService 去 implements Transactional。這意味著你的業務代碼裡「髒」了，它必須知道框架的存在。如果你想換個框架，或者想讓這個類別同時具備 10 個功能，你的 implements 列表會長到爆炸。
+
+反射 + 註解 方案（現代）：
+你的類別是一個乾淨的 POJO（Plain Old Java Object）。它不需要繼承任何東西，只需要在上面「貼貼紙」。框架（如 Spring）會像掃描儀一樣過來掃一遍，發現有貼紙就幫你增強功能。
+
+2. 反射的「必要性」：不只是處理註解
+雖然註解離不開反射，但反射的應用範圍比註解廣得多。即使沒有自定義註解，反射在以下情境依然是「剛需」：
+
+A. 破解封裝性（單元測試）
+當你要測試一個寫得不好的舊代碼，裡面有個 private 的欄位或方法，你無法透過 interface 觸及它。這時只有反射能強行 setAccessible(true) 進去。
+
+B. 動態加載外掛（Plugin System）
+想像你在寫一個支援外掛的軟體（如 IDE 或遊戲 Mod）。你根本不知道使用者會寫什麼類別。
+你不可能叫使用者 implements 你的介面（因為他可能想用自己的結構）。
+反射讓你可以在執行期讀取某個 .jar 檔，找出裡面的所有方法並執行，這跟註解無關，跟**「對未知代碼的探索」**有關。
+C. 泛型與序列化（JSON 解析）
+像 Jackson 或 Gson 這種把 JSON 轉成 Java 物件的工具。它不需要你貼任何註解也能跑。它靠反射去抓你的變數名稱（如 String name），然後動態地把 JSON 裡的值填進去。
+
+3. 你的筆記補充：反射與註解的「共生關係」
+你可以把這兩者的關係想像成：
+註解（Annotation）：是**「地圖上的標記」**。它本身沒有動力，不會動。
+反射（Reflection）：是**「探險家」**。他拿著手電筒（API）到處照，看到標記後，決定要不要執行 method.invoke()。
+------------------------------------------------------------------
+$note2
+代理物件
+什麼是代理物件？（生活化比喻）
+	剛才學到的 method.invoke(obj, val) 雖然強大，但如果你每個方法都要手動寫一遍「檢查註解 -> 執行反射」，那開發者會崩潰。
+代理物件的作用就是：
+JVM 在記憶體中動態生成一個全新的類別，這個類別繼承了你的 Service 或實作了相同的 interface。
+它跟「攔截器（Interceptor）」的關係
+代理物件是「外殼」，攔截器是「靈魂」。
+
+代理物件 (Proxy)：負責「攔截」掉原本的呼叫。它確保所有對 obj 的存取都要先經過它。
+
+攔截器 (Interceptor/Advice)：是具體的「邏輯」。例如：檢查有沒有貼 @Transactional 註解？如果有，就在 invoke 之前開啟資料庫事務。
+
+怎麼生出這個 Proxy 的？
+	這就是 Java 底層最神的地方，主要有兩種手段：
+	1.JDK Dynamic Proxy (基於 Interface)：
+		如果你的類別有實作介面（例如 UserServiceImpl implements UserService），Java 內建就能生出一個代理。
+
+	2.CGLIB (基於 繼承)：
+		如果你的類別沒有介面（就是一個單純的 class），Spring 會利用 CGLIB 技術，直接在字節碼層級「生出一個子類別」來當代理。這就是為什麼 Spring 的 Bean 不能是 final 的原因（因為 final 不能被繼承）。
+		
+代理就是一個虛構的子類別繼承被代理人加上 前處理 與後處理 ?
+類似就是 pyhton的 語法糖那樣 (概念類似 但因為java是強型別 只能利用多型 把方法偽裝成物件)
+
+JDK 動態代理 (內建功能)
+	這是 Java 官方提供的 java.lang.reflect.Proxy 類別。它不需要安裝任何框架就能跑。
+	實作三步驟：
+		1.定義介面：JDK 代理規定，被代理的人一定要有介面（因為它是「雙胞胎」模式）。
+		2.實作攔截邏輯：你需要實作一個 InvocationHandler，這就是我們聊的「經紀人邏輯」。
+		3.生成代理物件：呼叫 Proxy.newProxyInstance()。
+example :
+---------------------------------------------------------------------
+// 1. 介面 (合約)
+interface Singer { void sing(); }
+
+// 2. 被代理的人 (明星)
+class Star implements Singer {
+    public void sing() { System.out.println("🎤 唱歌中..."); }
+}
+
+// 3. 攔截器實作 (經紀人)
+class Agent implements InvocationHandler {
+    private Object target; // 持有真正的明星
+    public Agent(Object target) { this.target = target; }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        System.out.println("--- [前處理] 收門票錢 ---");
+        
+        // 核心：用反射執行真正的明星方法
+        Object result = method.invoke(target, args); 
+        
+        System.out.println("--- [後處理] 清理舞台 ---");
+        return result;
+    }
+}
+
+// 4. 生成與執行
+public class Main {
+    public static void main(String[] args) {
+        Star star = new Star();
+        // 生成代理物件 (虛擬的雙胞胎)
+        Singer proxy = (Singer) Proxy.newProxyInstance(
+            Singer.class.getClassLoader(),
+            new Class[] { Singer.class },
+            new Agent(star)
+        );
+        
+        proxy.sing(); // 使用者以為在叫明星，其實在叫代理人
+    }
+}
+---------------------------------------------------------------------
+
+開發小結
+JDK Proxy：Java 原生功能，優點是快、內建；缺點是 「一定要有 interface」。
+CGLIB：第三方庫（Spring 已內嵌），優點是 「沒有 interface 也能代理（靠繼承）」；缺點是不能代理 final 方法。
+
+其他
+
+1. Lombok：編譯時期的「代碼產生器」 (Compile-time)
+Lombok 運作在 javac 編譯的過程中。
+
+時機：當你按下存檔或編譯時，Lombok 的註解處理器（Annotation Processor）會介入。
+
+做法：它直接修改你的 AST (抽象語法樹)。它看到 @Data，就幫你把 getter/setter 寫進去。
+
+結果：編譯出來的 .class 檔案裡，已經實體存在這些方法了。
+
+類比：就像是你寫了簡譜，Lombok 在印刷（編譯）成五線譜之前，幫你把音符全部補齊。
+
+2. CGLIB：執行時期的「字節碼魔改器」 (Runtime)
+CGLIB 運作在程式已經跑起來之後。
+
+時機：當你呼叫 getBean()，Spring 發現需要幫你的 GPU 類別做代理時。
+
+做法：它不改你的 .class 檔案，而是在 JVM 記憶體 裡，直接用字節碼技術（ASM 庫）噴出一串二進位數據，強行定義一個新的類別（子類別）。
+
+結果：你的硬碟裡沒有這個代理類別的檔案，它只存在於記憶體中。
+
+類比：就像是演唱會現場（執行期），歌手唱到一半，經紀人突然跳出來（動態生成）擋在前面接話。
+
+特性				Lombok								CGLIB (Spring 常用) 
+生效時間			編譯期 (Compile Time)				執行期 (Runtime)
+修改對象			源碼 / 語法樹							記憶體中的字節碼 (Bytecode)
+主要目的			減少模板代碼 (Getter/Setter)			實現動態代理 (AOP/事務)
+檔案變化			.class 檔會變大						.class 檔不變，記憶體多出類別
+依賴關係			編譯完後可以不需要 Lombok 庫			執行時必須有 CGLIB 庫
+
+為什麼 CGLIB 不在編譯時做掉？
+你可能會想：既然編譯時做掉比較快，為什麼代理要等到執行時才做？
+這就是 「動態性」 的需求：
+	1.不確定性：編譯時，Java 並不知道哪些方法「真的」需要被攔截（例如某些事務是在 XML 或配置中心動態開啟的）。
+	2.靈活性：執行時代理可以根據目前的環境（例如開發環境 vs. 正式環境）決定要不要掛上日誌攔截器。
+	3.無侵入：Lombok 需要安裝 Plugin 且修改編譯過程；CGLIB 只需要一個一般的 Library 就能在任何 JVM 上跑。
