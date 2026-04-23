@@ -1,0 +1,4 @@
+VENV choose the ENV
+	CTRL+SHIFT+P
+	Python: Select Interpreter
+	CHOOSE the VENV/SCRIPT/python.exe

@@ -1,0 +1,123 @@
+uv init
+uv python pin 3.11
+uv add torch torchvision torchaudio --index https://download.pytorch.org/whl/rocm6.0 #linux 
+uv add torch-directml diffusers transformers accelerate #windows
+uv add diffusers transformers accelerate  # For Flux 簡單 -> 使用 ComfyUI 的 Windows 整合包
+uv add llama-cpp-python                  # For Words 需要安裝VS2022 C++桌面工具 簡單 ->直接下載 LM Studio 或 Ollama for Windows。這兩個工具內建了編譯好的驅動，能直接吃你的 AMD 顯示卡，完全跳過 Python 環境問題。
+
+torch-directml (讓 9070XT 動起來)
+diffusers / transformers (生圖核心)
+sentencepiece (文字處理 A)
+protobuf (文字處理 B) —— 就是現在裝的這個
+----------------------------
+flux test
+
+uv add sentencepiece protobuf bitsandbytes
+
+第一步：在官網獲取權限
+登入你的 Hugging Face 帳號。
+
+前往 black-forest-labs/FLUX.1-schnell 頁面。
+
+你會看到一個黃色或藍色的框框，要求你接受條款。填寫簡單資訊後點擊 "Agree and access repository"。
+
+第二步：建立 Access Token
+點擊你的頭像 -> Settings -> Access Tokens。
+
+點擊 "New token"，名字隨便取（例如 my-ai-agent），類型選擇 Read。
+
+複製這個 Token，等一下會用到。
+
+第三步：在本地端登入
+回到你的終端機（MINGW64 / PowerShell），在你的專案目錄下：
+
+安裝登入工具：
+
+PowerShell
+uv add huggingface_hub
+執行登入指令：
+
+PowerShell
+uv run huggingface-cli login
+看到 Token: 提示時，把剛才複製的 Token 貼上去（注意：貼上時畫面上不會顯示任何字元，這是正常的），然後按 Enter。
+
+最後問你 Add token as git credential? 可以輸入 n。
+
+變更flux 模型下載位置
+
+預設 C:\Users\你的用戶名\.cache\huggingface\hub
+
+系統變數變數名稱： HF_HOME
+
+變數值： D:\huggingface_cache（或其他你喜歡的位置）。
+
+run 
+
+from __future__ import annotations
+import torch
+import torch_directml
+from diffusers import FluxPipeline
+
+device = torch_directml.device()
+print(f"🚀 正在使用裝置: {device}")
+
+# 1. 載入模型時不直接 .to(device)
+pipe = FluxPipeline.from_pretrained(
+    "black-forest-labs/FLUX.1-schnell", 
+    torch_dtype=torch.float16
+)
+
+# 2. 關鍵：使用這行代替 pipe.to(device)
+# 這會自動管理 VRAM，雖然會慢一點點，但保證不會崩潰
+# 刪除這行
+# pipe.enable_sequential_cpu_offload() #default cuda NV GPU
+
+# 換成這行
+pipe.enable_model_cpu_offload(device=device)
+print("🎨 正在生成圖片 (使用分流加載技術)...")
+
+prompt = "A high-tech cyberpunk workstation with AMD GPU, 8k resolution"
+image = pipe(
+    prompt,
+    guidance_scale=0.0,
+    num_inference_steps=4,
+    max_sequence_length=256,
+).images[0]
+
+image.save("flux_test_9070xt.png")
+print("✅ 成功生成圖片！請查看資料夾。")
+
+--------------------------------------------------------------use this for memory too small
+from __future__ import annotations
+import torch
+import torch_directml
+from diffusers import FluxPipeline
+
+device = torch_directml.device()
+print(f"🚀 正在使用裝置: {device}")
+
+# 1. 載入模型
+pipe = FluxPipeline.from_pretrained(
+    "black-forest-labs/FLUX.1-schnell", 
+    torch_dtype=torch.float16
+)
+
+# 2. 針對 AMD DirectML 的手動優化
+# 我們只把最耗算力的 transformer 搬到 GPU
+# text_encoder 和 vae 留在 CPU (稍微慢一點，但保證不崩潰)
+pipe.transformer.to(device)
+# pipe.vae.to(device) # 如果顯存夠再開這行，不夠就註解掉
+
+print("🎨 正在生成圖片 (手動 VRAM 分流模式)...")
+
+prompt = "A high-tech cyberpunk workstation with AMD GPU, 8k resolution"
+image = pipe(
+    prompt,
+    guidance_scale=0.0,
+    num_inference_steps=4,
+    max_sequence_length=256,
+).images[0]
+
+image.save("flux_test_9070xt.png")
+print("✅ 成功生成圖片！")
+--------------------------------------------------------------

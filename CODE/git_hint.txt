@@ -38,4 +38,20 @@ git
 		status
 		log --oneline --graph --decorate --all
 	
-	
+	暫存
+		stash
+		stash save "hint" 
+		stash push -m "hint"
+		stash list #觀看 所有暫存
+		stash show stash@{0} #觀看某個暫存
+		git stash show -p stash@{0} 查看特定暫存的詳細代碼差異 (diff)：
+		git stash apply stash@{0} #取回但「保留」暫存紀錄（保險做法）：
+		git stash pop #取回並「刪除」暫存紀錄（最常用）：
+		git stash drop stash@{0} #刪除特定的暫存：
+		git stash clear #清除所有暫存（慎用！）：
+		git stash -u #連同「新檔案」一起暫存 , 預設的 git stash 只會暫存已經被 git 追蹤的檔案。
+
+只想放棄特定檔案	git checkout -- <filename>
+放棄所有已追蹤檔案的修改	git reset --hard HEAD
+放棄本機修改並同步雲端	git fetch 接著 git reset --hard origin/master
+連同新創的資料夾/檔案也刪掉	git clean -fd

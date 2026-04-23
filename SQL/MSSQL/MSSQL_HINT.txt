@@ -1,0 +1,6 @@
+給予權限(GRANT)
+-------------------------------------------------------
+	USE stock_data;
+	GRANT ALTER, CREATE TABLE TO your_user_name; --#給予修改 創建 TABLE的權限
+	ALTER AUTHORIZATION ON SCHEMA::dbo TO your_user_name; --#給予 SCHEMA::dbo的權限
+	ALTER ROLE db_ddladmin ADD MEMBER your_user_name; --#給予 DBADMIN 的權限

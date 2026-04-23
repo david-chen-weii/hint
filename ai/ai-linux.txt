@@ -1,0 +1,5 @@
+uv init
+uv python pin 3.11
+uv add torch torchvision torchaudio      # NVIDIA is default, no index needed
+uv add diffusers transformers accelerate
+uv add llama-cpp-python
