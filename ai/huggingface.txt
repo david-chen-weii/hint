@@ -1,0 +1,6 @@
+uv tool install huggingface-hub
+
+hf login auth "token"
+
+huggingface-cli download meta-llama/Llama-4-Scout-17B-16E-Instruct --local-dir ./Llama-4-Scout
+

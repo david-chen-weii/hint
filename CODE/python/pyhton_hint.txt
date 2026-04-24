@@ -8,7 +8,8 @@ install: -c "irm https://astral.sh/uv/install.ps1 | iex"
 <------------------------------------------------------------>
 # Windows (PowerShell):
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-
+LINUX
+curl -LsSf https://astral.sh/uv/install.sh | sh
 # 確認 uv python list (uv 可使用的python版本)
  
 # 2. 初始化專案 (這會建立 pyproject.toml)
