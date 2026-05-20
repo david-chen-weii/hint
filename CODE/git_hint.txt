@@ -14,7 +14,9 @@ git
 		remote remove nickname (delete)
 	下載
 		fetch 
-		pull(fetch + merge)
+		pull(fetch + merge) [cmd]
+			cmd : 
+				--rebase (維持歷史)
 		clone(down all repo and git setting)
 	上傳
 		add . (add changes)
@@ -32,7 +34,7 @@ git
 		git push origin --delete branch-name(delete remote branch)
 		switch branch-name
 		switch -c new-branch remote-default-branch (add new branch by remote)
-		check out -b branch-name(add and switch old)
+		checkout -b branch-name(add and switch old) 跳轉分支
 		switch -c branch-name(add and switch new)
 	差異
 		status
@@ -50,7 +52,24 @@ git
 		git stash drop stash@{0} #刪除特定的暫存：
 		git stash clear #清除所有暫存（慎用！）：
 		git stash -u #連同「新檔案」一起暫存 , 預設的 git stash 只會暫存已經被 git 追蹤的檔案。
-
+	修改(會動到 歷史SHA ID, 不要在多人協作的專案中 改到已經push的歷史)
+		rebase [cmd] HEAD~n
+			cmd :
+				-i 互動模式
+		修改 往前 n 版本的commit
+		rebase main 通常是為了分支 再提交時 避免main已經有新版本 導致合併困難(歷史交叉) (直接把東西接在新歷史後)
+		
+		reset [cmd] [HEAD~n/[origin/main/ORIG_HEAD]]
+			cmd :
+				--soft 保留修改狀態 只退回commit紀錄 不需要重新add 
+				--hard 全部退回到 歷史狀態
+				--mixed (預設) 類似 soft 但需要重新add
+		將  commit 資訊 刪除[n個commit歷史/ 回到fetch/pull的commit狀態]
+	救援
+		reflog(找到 本地90天內追蹤物件的指標紀錄 /rm -rf .git 被取消追蹤的 就不見了)
+		[git stash 如果有新增一些需要的檔案 先暫存]
+		git reset --hard [SHA_ID] [強迫回復到 SHA 狀態] / git reset --soft [SHA_ID] 保留現在狀況 只退回歷史
+		[git stash pop] 把 暫存檔拿出
 只想放棄特定檔案	git checkout -- <filename>
 放棄所有已追蹤檔案的修改	git reset --hard HEAD
 放棄本機修改並同步雲端	git fetch 接著 git reset --hard origin/master

@@ -1,0 +1,27 @@
+SELECT [DISTINCT] column_list
+FROM table_name
+[CROSS APPLY / JOIN ...]
+[WHERE condition]
+[GROUP BY column_list]
+[HAVING condition]
+[WINDOW w AS (...)] -- SQL Server 2022+
+[ORDER BY column_list]
+[OFFSET n ROWS FETCH NEXT n ROWS ONLY];
+
+FROM / APPLY / JOIN: SQL identifies the source data first.
+
+WHERE: It filters the rows. (This is why you can't use a SELECT alias here.)
+
+GROUP BY: It groups the remaining rows.
+
+HAVING: It filters the groups.
+
+SELECT: It finally picks the columns and calculates expressions.
+
+OVER (Window Functions): Window functions are calculated after the rows are filtered but before sorting for output.
+
+DISTINCT: It removes duplicates.
+
+ORDER BY: It sorts the final result set.
+
+TOP / OFFSET: It limits the output rows.
