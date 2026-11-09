@@ -42,8 +42,8 @@ git
 	
 	暫存
 		stash
-		stash save "hint" 
-		stash push -m "hint"
+		stash save "hint"  //舊方法  換成下面的push
+		stash push -m "hint" [file]
 		stash list #觀看 所有暫存
 		stash show stash@{0} #觀看某個暫存
 		git stash show -p stash@{0} 查看特定暫存的詳細代碼差異 (diff)：

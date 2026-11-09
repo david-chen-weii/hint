@@ -45,7 +45,7 @@ Bean 種類
 3. @Repositroy 		(DATA for db )
 4. @Controller 		(頁面呼叫)
 5. @RestController	(ajax 頁面呼叫)
-6. @Bean		(method for third party lib)
+6. @Bean		(method for third party lib)   // 在變數 前面用@Qualifier("BeanMethodName") 呼叫可以呼叫 @Bean 產生的物件
 7. @RequestScope(for local bean per user)
 
 1. @Value (get data from application.properties or application.yml)
