@@ -1,0 +1,171 @@
+第一層 主程式層
+進到bin 中 呼叫 artemis
+artemis help -- 主程式幫助
+artemis create [path] --創建新broker 在 path
+---------------------------------------------------------------------------------------------------------
+第二層 broker層 
+--分層的目的在 更新第一層的情況下 儘量不需要對第二層做變動
+broker/bin
+artemis 
+指令								用途
+artemis.cmd run					前景啟動 Broker
+artemis.cmd start				背景啟動 Broker
+artemis-service.exe install		安裝成 Windows Service
+artemis-service.exe start		啟動 Windows Service
+artemis-service.exe stop		停止 Windows Service
+artemis-service.exe uninstall	移除 Windows Service
+artemis.cmd help 				幫助
+
+#########################################################################################################
+基本概念 
+queue 先進先出 , 基本上只會有一個consumer(處理者)
+topic 所有訂閱者都可以得到一份
+drarable topic 持久訂閱者 如果資料發送時沒有收到 則會在連線時收到更新
+LVQ（Last-Value Queue）保留最多 N 筆的訊息 通常搭配Non-Destructive（非破壞性消費）
+#########################################################################################################
+--setting
+1.Role
+Artemis 不會因為你建立了 producer 這個 Role，就自動知道它只能發送訊息。
+你還需要在 broker.xml 裡設定 Security Permission，將 Role 對應到實際權限。
+ex:
+<security-setting match="#">
+    <permission type="send" roles="producer"/>
+    <permission type="consume" roles="consumer"/>
+    <permission type="createNonDurableQueue" roles="admin"/>
+    <permission type="deleteNonDurableQueue" roles="admin"/>
+</security-setting>
+#########################################################################################################
+2.IP:port
+設定
+ex: -- 一個broker 接收 2個連線入口
+<acceptors>
+    <acceptor name="netty">
+        tcp://0.0.0.0:61616
+    </acceptor>
+    <acceptor name="netty2">
+        tcp://0.0.0.0:61617
+    </acceptor>
+</acceptors>
+--spring 中 如果需要多個入口 則需要利用@Bean去管理 application的唯一值 spring.artemis.broker-url=tcp://192.168.1.191:61616 
+#########################################################################################################
+3.安全權限
+<security-setting match="FX.PRICE.#">
+	<permission type="createNonDurableQueue" roles="amq,data_producer"/> 
+	....
+	role 可使用角色
+	type :
+			Permission						意義
+			createNonDurableQueue		建立非持久 Queue
+			deleteNonDurableQueue		刪除非持久 Queue
+			createDurableQueue			建立持久 Queue
+			deleteDurableQueue			刪除持久 Queue
+			createAddress				建立 Address
+			deleteAddress				刪除 Address
+			send						發送訊息
+			consume						消費訊息
+			browse						瀏覽 Queue 訊息
+			manage						管理資源
+	
+</security-setting>
+#########################################################################################################
+4.訊息設定
+<address-setting match="FX.PRICE.SPOT.#">
+設定									目前值												意義
+address-full-policy					DROP												當空間滿了 丟棄新進訊息 搭配下方 max-size-bytes
+#PAGE	分頁儲存	將訊息寫入磁碟 Page，而不是只留在記憶體
+#DROP	丟棄	丟棄超出容量限制的新訊息
+#BLOCK	阻塞	阻止 Producer 繼續發送，直到有空間
+#FAIL	失敗	拒絕新訊息，讓發送端收到錯誤
+max-size-bytes 						300000												空間byte
+---------------------------------------------------------------------------------------------------------
+auto-create-expiry-resources		false												開啟逾時機制 搭配下方 expiry-address
+ex: spring 中jmsTemplate.setTimeToLive(10000);
+------------------------------------------------------------------------------------------------------------
+expiry-address						EXPIRY.ADDRESS										愈時地址 逾時轉送到 地址中
+auto-create-addresses				true												Address 不存在時，允許自動建立
+auto-delete-addresses				false												不自動刪除 Address
+auto-delete-queues					false												不自動刪除 Queue
+---------------------------------------------------------------------------------------------------------
+default-address-routing-type		MULTICAST											預設使用多播路由
+#ANYCAST（類似 Queue）, MULTICAST（類似 Topic）
+---------------------------------------------------------------------------------------------------------
+retroactive-message-count			1													為新的 retroactive consumer 保留最多 1 則歷史訊息
+default-last-value-queue			false												預設不將 Queue 設定為 Last Value Queue
+</address-setting>
+#########################################################################################################
+5.
+萬用碼 * and #
+---------------------------------------------------------------------------------------------------------
+* 匹配單一層級
+ex:
+FX.*.USD：
+Address				匹配？
+FX.SPOT.USD			是
+FX.FORWARD.USD		是
+FX.SPOT.TWD.USD		否
+FX.USD				否
+---------------------------------------------------------------------------------------------------------
+# 匹配 0個以上的多個層級
+ex : 
+Address	A：			FX.SPOT.#			B：FX.#.USD
+FX.SPOT.A.B			符合					不符合
+FX.SPOT.A.B.USD		符合					符合
+FX.SPOT.USD			符合					符合
+FX.A.B.USD			不符合				符合
+FX.SPOT.A			符合					不符合
+多重符合時 則會選擇 最接近的
+ex:
+FX.#
+FX.SPOT.#
+FX.SPOT.A 選擇 FX.SPOT.#
+#########################################################################################################
+6.
+address queue組合 (將多個 address 組合成一個訂閱queue address 避免 listener 需要一直擴張)
+<addresses>
+    <address name="FX.PRICE.FWD.#"> //篩選器 與 address
+        <multicast>   
+            <queue name="Q.FX.PRICE.FWD.ALL"/> //queue Name(利用這個監聽)
+			<queue name="Q.FX.PRICE.FWD.ALL2"/> //queue Name(利用這個監聽)
+			....
+        </multicast>
+    </address>
+</addresses>
+單個或是持久mode的話 直接使用 address即可
+多個queue的監聽 destination = address + :: +queue Name = > FX.PRICE.FWD.#::FX.PRICE.FWD.ALL
+
+因為是這個設定是 queue 集合 所以不能用 topic duarable 的訂閱factory
+--------------------------------------------------------------------------------------------
+持久設定 (可分享給 10 個consumer, enabled 啟用狀態 default=true)
+<multicast>
+    <queue name="FX.PRICE.FWD.ALL" max-consumers="10"  enabled="true">
+		<durable>true</durable>
+	</queue>
+</multicast>
+---------------------------------------------------------------------------------------------------------
+<anycast>  
+競爭型, 只有其中一個<queue> 會收到  
+通常用於工作分流 分配, 
+但通常一個queue 多個consumer 去競爭更簡單
+進階用途...?
+<multicast> 
+topic型 , 所有<queue>都會收到訊息
+-------------------------------------------------------------------------------------------------------------
+fliter (broker.xml 啟用 在處理訊息前發動 不符合要求的會被除去)
+queue fliter
+<queue>
+ <filter string="color='red'"/>
+</queue>
+--------------------------------------------------------------------------------------------------------------
+consumer fliter(java 端啟用)
+--------------------------------------------------------------------------------------------------------------
+LVQ 設定
+<addresses>
+    <address name="FX.PRICE.FWD.#">
+        <multicast>
+            <queue
+                name="FX.PRICE.FWD.ALL"
+                last-value-key="symbol"
+                non-destructive="true"/>
+        </multicast>
+    </address>
+</addresses>
